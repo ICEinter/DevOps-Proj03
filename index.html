@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FixIt — ระบบแจ้งซ่อมออนไลน์</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f7fb; --surface:#ffffff; --text:#1b1f3b; --muted:#6b7090;
+    --primary:#5b4bff; --primary-2:#8a5cff; --accent:#ff8a3d; --ok:#16b67a;
+    --border:#e6e8f2; --shadow:0 20px 50px -20px rgba(60,50,180,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0f1120; --surface:#181b2e; --text:#eef0ff; --muted:#a2a7c7; --border:#2a2e48;
+      --shadow:0 20px 50px -20px rgba(0,0,0,.6); }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1160px;margin:0 auto;padding:0 20px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:14px;font-weight:600;border:0;cursor:pointer;font-family:inherit;font-size:1rem;transition:.25s}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 10px 25px -8px rgba(91,75,255,.6)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 30px -8px rgba(91,75,255,.7)}
+  .btn-ghost{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+  .btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+
+  /* Nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 80%,transparent);border-bottom:1px solid var(--border)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:70px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.35rem}
+  .logo-ic{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff}
+  .menu{display:flex;gap:30px;color:var(--muted);font-weight:500}
+  .menu a:hover{color:var(--primary)}
+  @media(max-width:820px){.menu{display:none}}
+
+  /* Hero */
+  .hero{position:relative;padding:90px 0 110px}
+  .blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.45;z-index:-1}
+  .b1{width:420px;height:420px;background:var(--primary);top:-80px;right:-100px}
+  .b2{width:320px;height:320px;background:var(--accent);bottom:0;left:-120px;opacity:.3}
+  .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:center}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:99px;background:var(--surface);border:1px solid var(--border);font-size:.9rem;color:var(--muted);margin-bottom:22px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(22,182,122,.2)}
+  h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.2;font-weight:700;margin-bottom:20px}
+  .grad{background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--muted);font-size:1.15rem;max-width:520px;margin-bottom:34px}
+  .cta{display:flex;gap:14px;flex-wrap:wrap}
+  .stats{display:flex;gap:40px;margin-top:48px;flex-wrap:wrap}
+  .stats b{font-size:1.8rem;display:block}
+  .stats span{color:var(--muted);font-size:.9rem}
+
+  .mock{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:24px;box-shadow:var(--shadow);position:relative}
+  .mock h4{font-weight:600;margin-bottom:16px;display:flex;justify-content:space-between}
+  .ticket{display:flex;align-items:center;gap:14px;padding:14px;border-radius:14px;border:1px solid var(--border);margin-bottom:12px}
+  .t-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:1.3rem;flex-shrink:0}
+  .ticket div{flex:1;min-width:0}
+  .ticket small{color:var(--muted);display:block}
+  .pill{padding:4px 10px;border-radius:99px;font-size:.78rem;font-weight:600;white-space:nowrap}
+  .p-wait{background:#fff1e6;color:#d9661b}.p-doing{background:#ece9ff;color:var(--primary)}.p-done{background:#e3f8ef;color:var(--ok)}
+  .float{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 16px;box-shadow:var(--shadow);font-size:.9rem;display:flex;gap:10px;align-items:center;animation:fl 4s ease-in-out infinite}
+  .f1{bottom:-24px;left:-30px}.f2{top:-22px;right:-18px;animation-delay:1.5s}
+  @keyframes fl{50%{transform:translateY(-10px)}}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr}.float{display:none}}
+
+  section{padding:90px 0}
+  .sec-head{text-align:center;max-width:620px;margin:0 auto 56px}
+  .eyebrow{color:var(--primary);font-weight:600;letter-spacing:.08em;font-size:.85rem;text-transform:uppercase}
+  h2{font-size:clamp(1.8rem,3.5vw,2.5rem);margin:8px 0 12px}
+  .sec-head p{color:var(--muted)}
+
+  .cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:18px}
+  .cat{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 20px;text-align:center;cursor:pointer;transition:.25s}
+  .cat:hover{transform:translateY(-6px);box-shadow:var(--shadow);border-color:var(--primary)}
+  .cat .t-ic{margin:0 auto 14px;width:58px;height:58px;font-size:1.7rem}
+  .cat small{color:var(--muted)}
+
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;counter-reset:s}
+  .step{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px}
+  .step::before{counter-increment:s;content:"0" counter(s);font-size:2.6rem;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .step h3{margin:6px 0}.step p{color:var(--muted);font-size:.95rem}
+  @media(max-width:900px){.steps{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.steps{grid-template-columns:1fr}}
+
+  /* Form */
+  .form-wrap{display:grid;grid-template-columns:.85fr 1.15fr;gap:40px;background:var(--surface);border:1px solid var(--border);border-radius:28px;overflow:hidden;box-shadow:var(--shadow)}
+  .form-side{background:linear-gradient(150deg,var(--primary),var(--primary-2) 60%,var(--accent));color:#fff;padding:44px}
+  .form-side h2{color:#fff}.form-side p{opacity:.9}
+  .contact{margin-top:30px;display:grid;gap:14px}
+  .contact div{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.14);padding:12px 16px;border-radius:14px}
+  form{padding:44px 44px 44px 0;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .f{display:flex;flex-direction:column;gap:6px}.full{grid-column:1/-1}
+  label{font-weight:500;font-size:.92rem}
+  input,select,textarea{font-family:inherit;font-size:1rem;padding:13px 15px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);transition:.2s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(91,75,255,.15)}
+  textarea{resize:vertical;min-height:110px}
+  .prio{display:flex;gap:10px;flex-wrap:wrap}
+  .prio input{display:none}
+  .prio label{padding:9px 18px;border-radius:99px;border:1px solid var(--border);cursor:pointer;font-size:.9rem}
+  .prio input:checked+label{background:var(--primary);color:#fff;border-color:var(--primary)}
+  @media(max-width:900px){.form-wrap{grid-template-columns:1fr}form{padding:0 24px 32px}.form-side{padding:32px 24px}}
+  @media(max-width:560px){form{grid-template-columns:1fr}}
+
+  /* Track */
+  .track{max-width:640px;margin:0 auto;display:flex;gap:12px}
+  .track input{flex:1}
+  #trackResult{max-width:640px;margin:20px auto 0}
+
+  footer{border-top:1px solid var(--border);padding:34px 0;color:var(--muted);font-size:.9rem}
+  .foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+  .toast{position:fixed;bottom:30px;left:50%;transform:translate(-50%,150%);background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);padding:18px 24px;border-radius:16px;display:flex;gap:12px;align-items:center;transition:.4s cubic-bezier(.2,1.4,.4,1);z-index:100;max-width:calc(100% - 32px)}
+  .toast.show{transform:translate(-50%,0)}
+  .reveal{opacity:0;transform:translateY(30px);transition:.7s}
+  .reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-in">
+    <a href="#" class="logo"><span class="logo-ic">🔧</span>FixIt</a>
+    <div class="menu">
+      <a href="#services">บริการ</a><a href="#how">ขั้นตอน</a><a href="#report">แจ้งซ่อม</a><a href="#track">ติดตามงาน</a>
+    </div>
+    <a href="#report" class="btn btn-primary" style="padding:10px 20px">แจ้งซ่อมเลย</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="blob b1"></div><div class="blob b2"></div>
+  <div class="container hero-grid">
+    <div>
+      <span class="badge"><span class="dot"></span>ช่างพร้อมให้บริการ 24 ชั่วโมง</span>
+      <h1>แจ้งซ่อมง่าย <span class="grad">ได้ช่างไว</span><br>ติดตามได้ทุกขั้นตอน</h1>
+      <p class="lead">ระบบแจ้งซ่อมออนไลน์ ครอบคลุมไฟฟ้า ประปา แอร์ คอมพิวเตอร์ และอาคารสถานที่ แจ้งปัญหาได้ในไม่ถึง 1 นาที</p>
+      <div class="cta">
+        <a href="#report" class="btn btn-primary">📝 แจ้งซ่อมตอนนี้</a>
+        <a href="#track" class="btn btn-ghost">🔍 ติดตามสถานะ</a>
+      </div>
+      <div class="stats">
+        <div><b>12,500+</b><span>งานซ่อมสำเร็จ</span></div>
+        <div><b>30 นาที</b><span>เวลาตอบกลับเฉลี่ย</span></div>
+        <div><b>4.9 ★</b><span>ความพึงพอใจ</span></div>
+      </div>
+    </div>
+    <div class="mock reveal">
+      <h4>งานแจ้งซ่อมล่าสุด <small style="color:var(--muted);font-weight:400">วันนี้</small></h4>
+      <div class="ticket"><span class="t-ic" style="background:#fff4d6">💡</span><div><b>ไฟห้อง 302 ดับ</b><small>#FX-1042 · อาคาร B</small></div><span class="pill p-doing">กำลังซ่อม</span></div>
+      <div class="ticket"><span class="t-ic" style="background:#e0f2ff">❄️</span><div><b>แอร์ไม่เย็น</b><small>#FX-1041 · ห้องประชุม</small></div><span class="pill p-wait">รอช่าง</span></div>
+      <div class="ticket"><span class="t-ic" style="background:#e3f8ef">🚰</span><div><b>ก๊อกน้ำรั่ว</b><small>#FX-1040 · ห้องน้ำชั้น 1</small></div><span class="pill p-done">เสร็จแล้ว</span></div>
+      <div class="ticket" style="margin:0"><span class="t-ic" style="background:#ece9ff">💻</span><div><b>คอมเปิดไม่ติด</b><small>#FX-1039 · ห้องคอม 2</small></div><span class="pill p-done">เสร็จแล้ว</span></div>
+      <div class="float f1">✅ <span>ซ่อมเสร็จแล้ว <b>3 งาน</b></span></div>
+      <div class="float f2">⚡ <span>ช่างกำลังเดินทาง</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="services">
+  <div class="container">
+    <div class="sec-head reveal"><span class="eyebrow">หมวดงานซ่อม</span><h2>เราซ่อมได้ทุกอย่าง</h2><p>เลือกหมวดที่ตรงกับปัญหา ระบบจะส่งต่อให้ช่างผู้เชี่ยวชาญทันที</p></div>
+    <div class="cats">
+      <div class="cat reveal" data-cat="ไฟฟ้า"><span class="t-ic" style="background:#fff4d6">💡</span><b>ไฟฟ้า</b><br><small>ไฟดับ ปลั๊ก สวิตช์</small></div>
+      <div class="cat reveal" data-cat="ประปา"><span class="t-ic" style="background:#e3f8ef">🚰</span><b>ประปา</b><br><small>น้ำรั่ว ท่อตัน</small></div>
+      <div class="cat reveal" data-cat="เครื่องปรับอากาศ"><span class="t-ic" style="background:#e0f2ff">❄️</span><b>แอร์</b><br><small>ไม่เย็น น้ำหยด</small></div>
+      <div class="cat reveal" data-cat="คอมพิวเตอร์/IT"><span class="t-ic" style="background:#ece9ff">💻</span><b>คอมพิวเตอร์ / IT</b><br><small>เน็ต ปริ้นเตอร์</small></div>
+      <div class="cat reveal" data-cat="อาคารสถานที่"><span class="t-ic" style="background:#ffe6e0">🏢</span><b>อาคารสถานที่</b><br><small>ประตู หน้าต่าง โต๊ะ</small></div>
+      <div class="cat reveal" data-cat="อื่นๆ"><span class="t-ic" style="background:#f0f0f5">🧰</span><b>อื่นๆ</b><br><small>งานซ่อมทั่วไป</small></div>
+    </div>
+  </div>
+</section>
+
+<section id="how" style="padding-top:20px">
+  <div class="container">
+    <div class="sec-head reveal"><span class="eyebrow">ขั้นตอน</span><h2>ง่ายแค่ 4 ขั้นตอน</h2></div>
+    <div class="steps">
+      <div class="step reveal"><h3>แจ้งปัญหา</h3><p>กรอกรายละเอียดและสถานที่ผ่านฟอร์มออนไลน์</p></div>
+      <div class="step reveal"><h3>รับเลขงาน</h3><p>ได้รับหมายเลขแจ้งซ่อมไว้ติดตามสถานะ</p></div>
+      <div class="step reveal"><h3>ช่างดำเนินการ</h3><p>ช่างผู้เชี่ยวชาญเข้าตรวจสอบและซ่อมแซม</p></div>
+      <div class="step reveal"><h3>ปิดงาน</h3><p>ตรวจรับงานและให้คะแนนความพึงพอใจ</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="report">
+  <div class="container">
+    <div class="form-wrap reveal">
+      <div class="form-side">
+        <span class="eyebrow" style="color:#fff;opacity:.8">แบบฟอร์ม</span>
+        <h2>แจ้งซ่อมออนไลน์</h2>
+        <p>กรอกข้อมูลให้ครบถ้วน เจ้าหน้าที่จะติดต่อกลับโดยเร็วที่สุด</p>
+        <div class="contact">
+          <div>📞 <span>โทร 038-000-000</span></div>
+          <div>💬 <span>LINE: @fixit</span></div>
+          <div>🕒 <span>รับแจ้ง 24 ชม. ทุกวัน</span></div>
+        </div>
+      </div>
+      <form id="repairForm">
+        <div class="f"><label>ชื่อ-นามสกุล *</label><input name="name" required placeholder="เช่น สมชาย ใจดี"></div>
+        <div class="f"><label>เบอร์โทรศัพท์ *</label><input name="phone" required pattern="[0-9\-]{9,12}" placeholder="08x-xxx-xxxx"></div>
+        <div class="f"><label>หมวดงานซ่อม *</label>
+          <select name="cat" id="catSel" required>
+            <option value="">-- เลือกหมวด --</option>
+            <option>ไฟฟ้า</option><option>ประปา</option><option>เครื่องปรับอากาศ</option>
+            <option>คอมพิวเตอร์/IT</option><option>อาคารสถานที่</option><option>อื่นๆ</option>
+          </select></div>
+        <div class="f"><label>สถานที่ / ห้อง *</label><input name="place" required placeholder="เช่น อาคาร B ห้อง 302"></div>
+        <div class="f full"><label>รายละเอียดปัญหา *</label><textarea name="detail" required placeholder="อธิบายอาการเสียโดยละเอียด"></textarea></div>
+        <div class="f full"><label>ระดับความเร่งด่วน</label>
+          <div class="prio">
+            <input type="radio" name="prio" id="p1" value="ปกติ" checked><label for="p1">🟢 ปกติ</label>
+            <input type="radio" name="prio" id="p2" value="ด่วน"><label for="p2">🟠 ด่วน</label>
+            <input type="radio" name="prio" id="p3" value="ด่วนมาก"><label for="p3">🔴 ด่วนมาก</label>
+          </div></div>
+        <div class="f full"><button class="btn btn-primary" style="justify-content:center">🚀 ส่งเรื่องแจ้งซ่อม</button></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section id="track" style="padding-top:20px">
+  <div class="container">
+    <div class="sec-head reveal"><span class="eyebrow">ติดตามงาน</span><h2>ตรวจสอบสถานะงานซ่อม</h2><p>กรอกหมายเลขแจ้งซ่อมที่ได้รับ เช่น FX-1042</p></div>
+    <div class="track reveal"><input id="trackId" placeholder="FX-xxxx"><button class="btn btn-primary" id="trackBtn">ค้นหา</button></div>
+    <div id="trackResult"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="container foot">
+    <span>© 2026 FixIt — ระบบแจ้งซ่อมออนไลน์</span>
+    <span>Made with ❤️ for DevOps Project</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const store = (() => { try { return JSON.parse(localStorage.getItem('fixit') || '{}'); } catch { return {}; } })();
+  const save = () => { try { localStorage.setItem('fixit', JSON.stringify(store)); } catch {} };
+  const toast = (html) => { const t = document.getElementById('toast'); t.innerHTML = html; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 4500); };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // Category click -> preselect in form
+  document.querySelectorAll('.cat').forEach(c => c.onclick = () => {
+    document.getElementById('catSel').value = c.dataset.cat;
+    document.getElementById('report').scrollIntoView();
+  });
+
+  document.getElementById('repairForm').onsubmit = e => {
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(e.target));
+    const id = 'FX-' + (1043 + Object.keys(store).length);
+    store[id] = { ...d, time: new Date().toLocaleString('th-TH') };
+    save();
+    e.target.reset();
+    document.getElementById('trackId').value = id;
+    toast(`<span style="font-size:1.6rem">🎉</span><div><b>แจ้งซ่อมสำเร็จ!</b><br><small>หมายเลขงานของคุณ: <b>${id}</b></small></div>`);
+  };
+
+  document.getElementById('trackBtn').onclick = () => {
+    const id = document.getElementById('trackId').value.trim().toUpperCase();
+    const r = store[id], box = document.getElementById('trackResult');
+    box.innerHTML = r
+      ? `<div class="ticket" style="background:var(--surface)"><span class="t-ic" style="background:#fff1e6">🛠️</span><div><b>${esc(r.cat)} · ${esc(r.place)}</b><small>${id} · ${esc(r.time)} · ความเร่งด่วน: ${esc(r.prio)}</small><small>${esc(r.detail)}</small></div><span class="pill p-wait">รอช่าง</span></div>`
+      : `<div class="ticket" style="background:var(--surface)"><span class="t-ic" style="background:#ffe6e0">❓</span><div><b>ไม่พบหมายเลขงาน</b><small>กรุณาตรวจสอบหมายเลขอีกครั้ง</small></div></div>`;
+  };
+
+  const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('in')), { threshold: .12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
