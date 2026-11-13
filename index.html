@@ -7,14 +7,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#f6f7fb; --surface:#ffffff; --text:#1b1f3b; --muted:#6b7090;
-    --primary:#5b4bff; --primary-2:#8a5cff; --accent:#ff8a3d; --ok:#16b67a;
-    --border:#e6e8f2; --shadow:0 20px 50px -20px rgba(60,50,180,.25);
+    --bg:#09080d; --surface:#14111c; --text:#f4eefc; --muted:#a397b8;
+    --primary:#c026d3; --primary-2:#8b5cf6; --accent:#ec4899; --ok:#34d399;
+    --border:#2a2238; --shadow:0 20px 50px -20px rgba(192,38,211,.35);
+    color-scheme:dark;
   }
-  @media (prefers-color-scheme: dark){
-    :root{ --bg:#0f1120; --surface:#181b2e; --text:#eef0ff; --muted:#a2a7c7; --border:#2a2e48;
-      --shadow:0 20px 50px -20px rgba(0,0,0,.6); }
-  }
+  /* Dark theme overrides */
+  .btn-primary{box-shadow:0 10px 25px -8px rgba(192,38,211,.6)!important}
+  .btn-primary:hover{box-shadow:0 16px 34px -8px rgba(236,72,153,.7)!important}
+  .t-ic{background:rgba(192,38,211,.12)!important;border:1px solid rgba(192,38,211,.25)}
+  .p-wait{background:rgba(236,72,153,.15)!important;color:#f472b6!important}
+  .p-doing{background:rgba(139,92,246,.18)!important;color:#c4b5fd!important}
+  .p-done{background:rgba(52,211,153,.14)!important;color:var(--ok)!important}
+  .b1{background:var(--primary)!important;opacity:.35}
+  .b2{background:var(--accent)!important;opacity:.25!important}
+  input:focus,select:focus,textarea:focus{box-shadow:0 0 0 4px rgba(192,38,211,.2)!important}
+  .cat:hover,.step:hover{border-color:var(--accent)}
+  .step{transition:.25s}
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
